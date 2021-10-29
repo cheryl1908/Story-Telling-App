@@ -72,6 +72,7 @@ export default class LoginScreen extends Component {
           .auth()
           .signInWithCredential(credential)
           .then(function (result) {
+            console.log(result);
             if (result.additionalUserInfo.isNewUser) {
               firebase
                 .database()
@@ -108,9 +109,9 @@ export default class LoginScreen extends Component {
       const result = await Google.logInAsync({
         behaviour: "web",
         androidClientId:
-          "72696421845-lqe44rrjuiggsegp1uv4gklv34tvl3gc.apps.googleusercontent.com",
+          "673708304238-7c5gj3jk3bpte4ch6s988l7rotocd54b.apps.googleusercontent.com",
         iosClientId:
-          "72696421845-osrvc36bjie4264j4c0812sp5a2egqhj.apps.googleusercontent.com",
+          "673708304238-qpjnfnvg6ageoje79fm32cuu5in3ilp1.apps.googleusercontent.com",
         scopes: ["profile", "email"]
       });
 

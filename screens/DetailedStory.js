@@ -30,7 +30,9 @@ export default class DetailedStory extends Component {
       fontsLoaded: false,
       speakerColor: "gray",
       speakerIcon: "volume-high-outline",
-      light_theme: true
+      light_theme: true,
+      isLikePressed:false,
+      likes:this.props.route.params.story.likes,
     };
   }
 
@@ -61,7 +63,8 @@ export default class DetailedStory extends Component {
       speakerColor: current_color === "gray" ? "#ee8249" : "gray"
     });
     if (current_color === "gray") {
-      Speech.speak(`${title} by ${author}`);
+      Speech.speak(title);
+      Speech.speak(author);
       Speech.speak(story);
       Speech.speak("The moral of the story is!");
       Speech.speak(moral);
@@ -69,7 +72,29 @@ export default class DetailedStory extends Component {
       Speech.stop();
     }
   }
-
+  liked=()=>{
+    if(this.state.isLikePressed){
+      firebase.database()
+              .ref("/posts/")
+              .child(this.props.route.params.story_id)
+              .child("likes")
+              .set(firebase.database.ServerValue.increment(-1))
+      this.setState({
+        likes:(this.state.likes-=1),
+        isLikePressed:false
+      })
+    }else{
+        firebase.database()
+                .ref("/posts/")
+                .child(this.props.route.params.story_id)
+                .child("likes")
+                .set(firebase.database.ServerValue.increment(+1))
+        this.setState({
+          likes:(this.state.likes+=1),
+          isLikePressed:true
+        })
+  }
+}
   render() {
     if (!this.props.route.params) {
       this.props.navigation.navigate("Home");
@@ -148,10 +173,10 @@ export default class DetailedStory extends Component {
                   <TouchableOpacity
                     onPress={() =>
                       this.initiateTTS(
-                        this.props.route.params.title,
-                        this.props.route.params.author,
-                        this.props.route.params.story,
-                        this.props.route.params.moral
+                        this.props.route.params.story.title,
+                        this.props.route.params.story.author,
+                        this.props.route.params.story.story,
+                        this.props.route.params.story.moral,
                       )
                     }
                   >
@@ -185,6 +210,10 @@ export default class DetailedStory extends Component {
                 </Text>
               </View>
               <View style={styles.actionContainer}>
+              <TouchableOpacity style={this.state.isLikePressed?styles.liked:styles.disliked} 
+              onPress={()=>{
+                this.liked();
+              }}>
                 <View style={styles.likeButton}>
                   <Ionicons
                     name={"heart"}
@@ -199,9 +228,10 @@ export default class DetailedStory extends Component {
                         : styles.likeText
                     }
                   >
-                    12k
+                   {this.state.likes}
                   </Text>
                 </View>
+                </TouchableOpacity>
               </View>
             </ScrollView>
           </View>
@@ -357,5 +387,25 @@ const styles = StyleSheet.create({
     fontFamily: "Bubblegum-Sans",
     fontSize: RFValue(25),
     marginLeft: RFValue(5)
-  }
+  },
+  liked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    backgroundColor: "#eb3948",
+    borderRadius: RFValue(30)
+  },
+  disliked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    borderColor: "#eb3948",
+    borderWidth: 2,
+    borderRadius: RFValue(30)
+  },
+
 });

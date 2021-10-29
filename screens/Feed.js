@@ -20,14 +20,15 @@ let customFonts = {
   "Bubblegum-Sans": require("../assets/fonts/BubblegumSans-Regular.ttf")
 };
 
-let stories = require("./temp_stories.json");
+//let stories = require("./tempStories.json");
 
 export default class Feed extends Component {
   constructor(props) {
     super(props);
     this.state = {
       fontsLoaded: false,
-      light_theme: true
+      light_theme: true,
+      stories:[],
     };
   }
 
@@ -39,8 +40,26 @@ export default class Feed extends Component {
   componentDidMount() {
     this._loadFontsAsync();
     this.fetchUser();
+    this.fetchStories();
   }
-
+  fetchStories=()=>{
+    firebase
+    .database()
+    .ref("/post/")
+    .on("value", data=>{
+        var stories=[];
+        if(data.val()){
+          Object.keys(data.val()).forEach(function (key){
+            stories.push({key:key,value:data.val()[key]});
+          })
+        }
+        this.setState({stories:stories});
+        this.props.setupdateToFalse
+    },
+    function (err){
+      console.log(err.code);
+    })
+  }
   fetchUser = () => {
     let theme;
     firebase
@@ -88,13 +107,22 @@ export default class Feed extends Component {
               </Text>
             </View>
           </View>
+          {!this.state.stories[0]?
+            <View style={styles.noStories}>
+              <Text style={
+                this.state.light_theme
+                ? styles.noStoriesTextLight
+                : styles.noStoriesText
+              }> No Stories Available </Text>
+            </View>:
           <View style={styles.cardContainer}>
             <FlatList
               keyExtractor={this.keyExtractor}
-              data={stories}
+              data={this.state.stories}
               renderItem={this.renderItem}
             />
           </View>
+          }
           <View style={{ flex: 0.08 }} />
         </View>
       );
@@ -144,5 +172,19 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     flex: 0.85
+  },
+  noStories: {
+    flex: 0.85,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  noStoriesTextLight: {
+    fontSize: RFValue(40),
+    fontFamily: "Bubblegum-Sans"
+  },
+  noStoriesText: {
+    color: "white",
+    fontSize: RFValue(40),
+    fontFamily: "Bubblegum-Sans"
   }
 });

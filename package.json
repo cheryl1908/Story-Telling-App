@@ -17,9 +17,9 @@
     "expo": "~42.0.1",
     "expo-app-loading": "^1.1.2",
     "expo-font": "~9.2.1",
+    "expo-google-app-auth": "^8.1.4",
     "expo-speech": "~9.2.0",
     "expo-status-bar": "~1.0.4",
-    "expo-google-app-auth": "^8.1.4",
     "firebase": "^8.2.10",
     "react": "16.13.1",
     "react-dom": "16.13.1",
@@ -32,7 +32,8 @@
     "react-native-safe-area-context": "3.2.0",
     "react-native-screens": "~3.4.0",
     "react-native-web": "~0.13.12",
-    "react-navigation": "^4.4.4"
+    "react-navigation": "^4.4.4",
+    "ws": "^8.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0"

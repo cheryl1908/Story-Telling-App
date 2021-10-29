@@ -10,7 +10,7 @@ import {
   Image,
   ScrollView,
   TextInput,
-  Dimensions
+  Button
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { RFValue } from "react-native-responsive-fontsize";
@@ -41,6 +41,12 @@ export default class CreateStory extends Component {
   componentDidMount() {
     this._loadFontsAsync();
     this.fetchUser();
+    this.setState({
+      title:null,
+      description:null,
+      story:null,
+      moral:null
+    })
   }
 
   fetchUser = () => {
@@ -53,6 +59,30 @@ export default class CreateStory extends Component {
         this.setState({ light_theme: theme === "light" });
       });
   };
+  async addStory(){
+    if(this.state.title && this.state.description && this.state.story && this.state.moral){
+      var storyData={preview_image:this.state.previewImage,
+          title:this.state.title,
+         description:this.state.description, 
+         story:this.state.story,
+         moral:this.state.moral,
+         author:firebase.auth().currentUser.displayName,
+         createdOn:new Date(),
+         author_uid:firebase.auth().currentUser.uid,
+         likes:0,
+      }
+      await firebase.database()
+      .ref("/post/"+Math.random()
+      .toString(36)
+      .slice(2))
+      .set(storyData)
+      .then(function (snapshot){})
+      this.props.setupdateToTrue
+      this.props.navigation.navigate("Feed");
+    }else{
+      alert("All fields are required")
+    }
+  }
 
   render() {
     if (!this.state.fontsLoaded) {
@@ -206,10 +236,13 @@ export default class CreateStory extends Component {
                   }
                 />
               </View>
+              <View style={styles.submitButton}>
+                  <Button title="Submit" color="lightblue" onPress={()=>this.addStory()}></Button>
+              </View>
             </ScrollView>
           </View>
           <View style={{ flex: 0.08 }} />
-        </View>
+          </View>
       );
     }
   }
@@ -298,5 +331,10 @@ const styles = StyleSheet.create({
   inputTextBig: {
     textAlignVertical: "top",
     padding: RFValue(5)
-  }
+  },
+  submitButton:{
+    alignItems:"center",
+    marginTop:RFValue(20),
+    justifyContent:'center',
+  },
 });

@@ -25,20 +25,21 @@ export default class StoryCard extends Component {
     super(props);
     this.state = {
       fontsLoaded: false,
-      light_theme: true
+      light_theme: true,
+      story_id:this.props.story.key,
+      story_data:this.props.story.value,
+      isLikePressed:false,
+      likes:this.props.story.value.likes,
     };
   }
-
-  async _loadFontsAsync() {
-    await Font.loadAsync(customFonts);
-    this.setState({ fontsLoaded: true });
-  }
-
   componentDidMount() {
     this._loadFontsAsync();
     this.fetchUser();
   }
-
+  async _loadFontsAsync() {
+    await Font.loadAsync(customFonts);
+    this.setState({ fontsLoaded: true });
+  }
   fetchUser = () => {
     let theme;
     firebase
@@ -49,17 +50,50 @@ export default class StoryCard extends Component {
         this.setState({ light_theme: theme === "light" });
       });
   };
+  liked=()=>{
+    if(this.state.isLikePressed){
+      firebase.database()
+              .ref("/posts/")
+              .child(this.state.story_id)
+              .child("likes")
+              .set(firebase.database.ServerValue.increment(-1))
+      this.setState({
+        likes:(this.state.likes-=1),
+        isLikePressed:false
+      })
+    }else{
+        firebase.database()
+                .ref("/posts/")
+                .child(this.state.story_id)
+                .child("likes")
+                .set(firebase.database.ServerValue.increment(+1))
+        this.setState({
+          likes:(this.state.likes+=1),
+          isLikePressed:true
+        })
+  }
+}
 
   render() {
+    console.log(this.state.story_id);
+    let story=this.state.story_data;
+
     if (!this.state.fontsLoaded) {
       return <AppLoading />;
     } else {
+      let images = {
+        image_1: require("../assets/story_image_1.png"),
+        image_2: require("../assets/story_image_2.png"),
+        image_3: require("../assets/story_image_3.png"),
+        image_4: require("../assets/story_image_4.png"),
+        image_5: require("../assets/story_image_5.png")
+      };
       return (
         <TouchableOpacity
-          style={styles.container}
+          style={{flex:1}}
           onPress={() =>
             this.props.navigation.navigate("DetailedStory", {
-              story: this.props.story
+              story:story
             })
           }
         >
@@ -72,7 +106,7 @@ export default class StoryCard extends Component {
             }
           >
             <Image
-              source={require("../assets/story_image_1.png")}
+              source={images[story.preview_image]}
               style={styles.storyImage}
             ></Image>
             <View style={styles.titleContainer}>
@@ -83,7 +117,7 @@ export default class StoryCard extends Component {
                     : styles.storyTitleText
                 }
               >
-                {this.props.story.title}
+                {story.title}
               </Text>
               <Text
                 style={
@@ -92,7 +126,7 @@ export default class StoryCard extends Component {
                     : styles.storyAuthorText
                 }
               >
-                {this.props.story.author}
+                {story.author}
               </Text>
               <Text
                 style={
@@ -101,11 +135,15 @@ export default class StoryCard extends Component {
                     : styles.descriptionText
                 }
               >
-                {this.props.story.description}
+                {story.description}
               </Text>
             </View>
 
             <View style={styles.actionContainer}>
+              <TouchableOpacity style={this.state.isLikePressed?styles.liked:styles.disliked} 
+              onPress={()=>{
+                this.liked();
+              }}>
               <View style={styles.likeButton}>
                 <Ionicons
                   name={"heart"}
@@ -119,9 +157,10 @@ export default class StoryCard extends Component {
                       : styles.likeText
                   }
                 >
-                  12k
+                 {this.state.likes}
                 </Text>
               </View>
+              </TouchableOpacity>
             </View>
           </View>
         </TouchableOpacity>
@@ -226,5 +265,24 @@ const styles = StyleSheet.create({
     fontFamily: "Bubblegum-Sans",
     fontSize: RFValue(25),
     marginLeft: RFValue(5)
-  }
+  },
+  liked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    backgroundColor: "#eb3948",
+    borderRadius: RFValue(30)
+  },
+  disliked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    borderColor: "#eb3948",
+    borderWidth: 2,
+    borderRadius: RFValue(30)
+  },
 });
